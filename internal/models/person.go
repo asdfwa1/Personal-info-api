@@ -17,6 +17,14 @@ type FilterParams struct {
 }
 
 type PaginationParams struct {
-	Limit  int
-	OffSet int
+	Limit     int
+	OffSet    int
+	SortBy    string
+	SortOrder string
+}
+
+type PersonInput struct {
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic,omitempty"`
 }

@@ -44,7 +44,7 @@ func NewPersonRepository(db *sql.DB) (*PersonRepository, error) {
 		SaveStmt:   saveStmt,
 		UpdateStmt: updateStmt,
 		DeleteStmt: deleteStmt,
-		FindStmt:   `SELECT id, name, surname, patronymic, age, gender, nationality FROM persons WHERE 1=1`,
+		FindStmt:   `SELECT id, name, surname, patronymic, age, gender, nationality FROM persons WHERE true`,
 		DB:         db,
 	}, nil
 }
@@ -85,42 +85,59 @@ func (pr *PersonRepository) Delete(ctx context.Context, id uint32) error {
 	return nil
 }
 
-func (pr *PersonRepository) FindAll(ctx context.Context, filter models.FilterParams, pagination models.PaginationParams) ([]models.Person, error) {
+func (pr *PersonRepository) FindAll(ctx context.Context, filter models.FilterParams, pagination models.PaginationParams) ([]models.Person, int, error) {
 	query := pr.FindStmt
+	countQuery := "SELECT COUNT(*) FROM persons WHERE true"
 	args := []any{}
 	i := 1
 
 	if filter.Name != "" {
-		query = query + fmt.Sprintf(" AND name = $%d", i)
+		temp := fmt.Sprintf(" AND name = $%d", i)
+		query += temp
+		countQuery += temp
 		args = append(args, filter.Name)
 		i++
 	}
 	if filter.Surname != "" {
-		query = query + fmt.Sprintf(" AND surname = $%d", i)
+		temp := fmt.Sprintf(" AND surname = $%d", i)
+		query += temp
+		countQuery += temp
 		args = append(args, filter.Surname)
 		i++
 	}
 	if filter.Patronymic != "" {
-		query = query + fmt.Sprintf(" AND patronymic = $%d", i)
+		temp := fmt.Sprintf(" AND patronymic = $%d", i)
+		query += temp
+		countQuery += temp
 		args = append(args, filter.Patronymic)
 		i++
 	}
-
-	if pagination.Limit != 0 {
-		query = query + " LIMIT $" + strconv.Itoa(i)
-		args = append(args, pagination.Limit)
-		i++
+	if pagination.SortBy != "" {
+		query += " ORDER BY " + pagination.SortBy
+		if pagination.SortOrder == "DESC" {
+			query += " DESC"
+		}
 	}
 
-	if pagination.OffSet != 0 {
-		query = query + " OFFSET $" + strconv.Itoa(i)
-		args = append(args, pagination.OffSet)
-		i++
+	var total int
+	if err := pr.DB.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
+		return nil, 0, err
 	}
 
-	rows, err := pr.DB.QueryContext(ctx, query, args...)
+	queryArgs := append([]any{}, args...)
+	if pagination.Limit > 0 {
+		query += " LIMIT $" + strconv.Itoa(i)
+		queryArgs = append(queryArgs, pagination.Limit)
+		i++
+	}
+	if pagination.OffSet > 0 {
+		query += " OFFSET $" + strconv.Itoa(i)
+		queryArgs = append(queryArgs, pagination.OffSet)
+	}
+
+	rows, err := pr.DB.QueryContext(ctx, query, queryArgs...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -128,15 +145,15 @@ func (pr *PersonRepository) FindAll(ctx context.Context, filter models.FilterPar
 	for rows.Next() {
 		var p models.Person
 		if err := rows.Scan(&p.ID, &p.Name, &p.Surname, &p.Patronymic, &p.Age, &p.Gender, &p.Nationality); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		people = append(people, p)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return people, nil
+	return people, total, nil
 }
 
 func (pr *PersonRepository) Close() error {

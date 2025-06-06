@@ -3,7 +3,6 @@ package migrations
 import (
 	"Test_Task_EffMob/internal/config"
 	"Test_Task_EffMob/internal/database"
-	"database/sql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -11,24 +10,15 @@ import (
 	"log/slog"
 )
 
-func RunMigrations(cfg *config.Config, flag string) error {
+func RunMigrations(cfg *config.Config, flag string, db *database.Database) error {
 	if flag != "yes" {
 		slog.Info("Migrations are disabled")
 		return nil
 	}
-	connStr := database.DSN(cfg)
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			slog.Error("Failed to close database connection", "error", err)
-		}
-	}()
 
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
+
 		slog.Error("Failed to create DB driver", "error", err)
 		return err
 	}

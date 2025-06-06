@@ -1,0 +1,188 @@
+definitions:
+  models.Person:
+    properties:
+      age:
+        type: integer
+      gender:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      nationality:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  models.PersonInput:
+    properties:
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /people/:
+    get:
+      consumes:
+      - application/json
+      description: Get a List of persons with optional name, surname, patronymic filters
+        and pagination limit, offset, sorteBy, sorteOrder.
+      parameters:
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      - description: Filter by surname
+        in: query
+        name: surname
+        type: string
+      - description: Filter by patronymic
+        in: query
+        name: patronymic
+        type: string
+      - default: 10
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      - description: Field to sort by (name, surname, age, etc.)
+        in: query
+        name: sortBy
+        type: string
+      - description: Sort order (ASC or DESC)
+        in: query
+        name: sortOrder
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'Successful response" SchemaExample({"data": [{"id":1,"name":"John"}],
+            "total": 100})'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid query parameters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get List of persons with optional filters
+      tags:
+      - persons
+    post:
+      consumes:
+      - application/json
+      description: Create a new person with details.
+      parameters:
+      - description: Person Details
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/models.PersonInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Person created successfully
+          schema:
+            $ref: '#/definitions/models.Person'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new person
+      tags:
+      - persons
+  /people/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the person with the given ID from the system.
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Person deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Person not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a person by ID
+      tags:
+      - persons
+    put:
+      consumes:
+      - application/json
+      description: Update the details of an existing person by ID.
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Person Details
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/models.Person'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update person with ID
+          schema:
+            type: string
+        "400":
+          description: Invalid input or ID
+          schema:
+            type: string
+        "404":
+          description: Person not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update an existing person
+      tags:
+      - persons
+swagger: "2.0"

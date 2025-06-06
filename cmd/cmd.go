@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	_ "Test_Task_EffMob/docs"
 	"Test_Task_EffMob/internal/config"
 	"Test_Task_EffMob/internal/database"
 	"Test_Task_EffMob/internal/database/migrations"
@@ -12,6 +13,7 @@ import (
 	"Test_Task_EffMob/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"log/slog"
 	"net/http"
 )
@@ -20,22 +22,26 @@ func StartServer() {
 	logger.InitLogger(slog.LevelDebug)
 	cfg := config.LoadCfg()
 
-	err := migrations.RunMigrations(cfg, cfg.MigrationFlag)
-	if err != nil {
-		slog.Error("Failed execute migrations", "error", err)
-		panic(err)
-	}
-
 	db, err := database.NewDatabase(cfg)
 	if err != nil {
 		slog.Error("Failed to connect to DB", "error", err)
 		panic(err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			slog.Error("Failed to close database connection", "error", err)
+		}
+	}()
+
+	err = migrations.RunMigrations(cfg, cfg.MigrationFlag, db)
+	if err != nil {
+		slog.Error("Failed execute migrations", "error", err)
+		panic(err)
+	}
 
 	repo, err := repository.NewPersonRepository(db.DB)
 	if err != nil {
-		slog.Error("Failed to create Person Pepository", "error", err)
+		slog.Error("Failed to create Person Repository", "error", err)
 	}
 	enr := enricher.NewEnricher()
 	svc := service.NewPersonService(repo, enr)
@@ -45,6 +51,8 @@ func StartServer() {
 	r.Use(mymiddleware.RequestIDMiddleware)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Route("/people", func(r chi.Router) {
 		r.Post("/", handler.Create)

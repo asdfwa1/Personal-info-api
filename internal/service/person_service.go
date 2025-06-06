@@ -33,7 +33,7 @@ func (ps *PersonService) CreatePerson(ctx context.Context, p *models.Person) err
 	return ps.Repo.Save(ctx, &enriched)
 }
 
-func (ps *PersonService) GetPersons(ctx context.Context, filter models.FilterParams, pagination models.PaginationParams) ([]models.Person, error) {
+func (ps *PersonService) GetPersons(ctx context.Context, filter models.FilterParams, pagination models.PaginationParams) ([]models.Person, int, error) {
 	slog.DebugContext(ctx, "Get person with filter", filter, "and pagination", pagination)
 	return ps.Repo.FindAll(ctx, filter, pagination)
 }

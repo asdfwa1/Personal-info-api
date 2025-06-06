@@ -14,7 +14,7 @@ type Database struct {
 }
 
 func NewDatabase(cfg *config.Config) (*Database, error) {
-	connStr := DSN(cfg)
+	connStr := DSNWithPostgresHost(cfg)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,17 @@ func NewDatabase(cfg *config.Config) (*Database, error) {
 	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {
-		return nil, err
+		if err = db.Close(); err != nil {
+			slog.Error("Failed to close DB", slog.String("error", err.Error()))
+		}
+		connStr = DSNWithDBHost(cfg)
+		db, err = sql.Open("postgres", connStr)
+		if err != nil {
+			return nil, err
+		}
+		if err = db.PingContext(ctx); err != nil {
+			return nil, err
+		}
 	}
 
 	slog.InfoContext(context.Background(), "Successfully connected to database", "host", cfg.PostgresHost, "port", cfg.PostgresPort, "dbname", cfg.PostgresDbName)
@@ -31,7 +41,12 @@ func NewDatabase(cfg *config.Config) (*Database, error) {
 	return &Database{DB: db}, nil
 }
 
-func DSN(cfg *config.Config) string {
+func DSNWithDBHost(cfg *config.Config) string {
+	return "postgres://" + cfg.PostgresUser + ":" + cfg.PostgresPassword + "@" +
+		cfg.DBhost + ":" + cfg.PostgresPort + "/" + cfg.PostgresDbName + "?sslmode=disable"
+}
+
+func DSNWithPostgresHost(cfg *config.Config) string {
 	return "postgres://" + cfg.PostgresUser + ":" + cfg.PostgresPassword + "@" +
 		cfg.PostgresHost + ":" + cfg.PostgresPort + "/" + cfg.PostgresDbName + "?sslmode=disable"
 }

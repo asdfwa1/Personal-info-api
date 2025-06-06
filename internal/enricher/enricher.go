@@ -54,7 +54,11 @@ func (e *Enricher) Enrich(ctx context.Context, p models.Person) (models.Person, 
 			return p, fmt.Errorf("error calling Agify API: %w", err)
 		}
 	}
-	defer ageRes.Body.Close()
+	defer func() {
+		if err := ageRes.Body.Close(); err != nil {
+			slog.Error("Failed to close ageBody", "error", err)
+		}
+	}()
 	var age ResponseAge
 	if err := json.NewDecoder(ageRes.Body).Decode(&age); err == nil {
 		p.Age = age.Age
@@ -71,7 +75,11 @@ func (e *Enricher) Enrich(ctx context.Context, p models.Person) (models.Person, 
 			return p, fmt.Errorf("error calling Genderize API: %w", err)
 		}
 	}
-	defer genderRes.Body.Close()
+	defer func() {
+		if err := genderRes.Body.Close(); err != nil {
+			slog.Error("Failed to close genderBody", "error", err)
+		}
+	}()
 	var gender ResponseGender
 	if err := json.NewDecoder(genderRes.Body).Decode(&gender); err == nil {
 		p.Gender = gender.Gender
@@ -88,7 +96,11 @@ func (e *Enricher) Enrich(ctx context.Context, p models.Person) (models.Person, 
 			return p, fmt.Errorf("error calling Nationalize API: %w", err)
 		}
 	}
-	defer nationalityRes.Body.Close()
+	defer func() {
+		if err := nationalityRes.Body.Close(); err != nil {
+			slog.Error("Failed to close nationalityBody", "error", err)
+		}
+	}()
 	var nationality ResponseNational
 	if err := json.NewDecoder(nationalityRes.Body).Decode(&nationality); err == nil && len(nationality.Country) > 0 {
 		p.Nationality = nationality.Country[0].CountryID

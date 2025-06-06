@@ -13,6 +13,7 @@ type Config struct {
 	PostgresHost     string
 	PostgresPort     string
 	ServerPort       string
+	DBhost           string
 	MigrationFlag    string
 	MigrationPath    string
 	AgifyURL         string
@@ -32,6 +33,7 @@ func LoadCfg() *Config {
 		PostgresHost:     os.Getenv("Postgres_Host"),
 		PostgresPort:     os.Getenv("Postgres_Port"),
 		ServerPort:       os.Getenv("Server_Port"),
+		DBhost:           os.Getenv("DB_Host"),
 		MigrationFlag:    os.Getenv("Migration_Flag"),
 		MigrationPath:    os.Getenv("Migration_Path"),
 		AgifyURL:         os.Getenv("Agify_URL"),
