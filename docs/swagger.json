@@ -1,11 +1,16 @@
 {
+    "schemes": [
+        "http"
+    ],
     "swagger": "2.0",
     "info": {
-        "description": "API для управления персональными данными",
-        "title": "PERSONAL-DATA-API",
+        "description": "Сервис обогащает информацию о новых людях",
+        "title": "Сервис обогащения информации о людях",
         "contact": {},
         "version": "1.0"
     },
+    "host": "http://localhost:8080",
+    "basePath": "/",
     "paths": {
         "/people/": {
             "get": {
@@ -68,7 +73,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful response\" SchemaExample({\"data\": [{\"id\":1,\"name\":\"John\"}], \"total\": 100})",
+                        "description": "Successful response\"\tSchemaExample({\"data\": [{\"id\":1,\"name\":\"John\"}], \"total\": 100})",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true

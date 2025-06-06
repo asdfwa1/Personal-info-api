@@ -76,7 +76,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful response\" SchemaExample({\"data\": [{\"id\":1,\"name\":\"John\"}], \"total\": 100})",
+                        "description": "Successful response\"\tSchemaExample({\"data\": [{\"id\":1,\"name\":\"John\"}], \"total\": 100})",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -296,11 +296,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
-	Host:             "",
-	BasePath:         "",
-	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Host:             "http://localhost:8080",
+	BasePath:         "/",
+	Schemes:          []string{"http"},
+	Title:            "Сервис обогащения информации о людях",
+	Description:      "Сервис обогащает информацию о новых людях",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

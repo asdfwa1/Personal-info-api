@@ -18,6 +18,12 @@ import (
 	"net/http"
 )
 
+// StartServer
+// @title   Сервис обогащения информации о людях
+// @description Сервис обогащает информацию о новых людях
+// @host   http://localhost:8080
+// @BasePath  /
+// @schemes http
 func StartServer() {
 	logger.InitLogger(slog.LevelDebug)
 	cfg := config.LoadCfg()

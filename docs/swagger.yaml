@@ -1,3 +1,4 @@
+basePath: /
 definitions:
   models.Person:
     properties:
@@ -25,8 +26,11 @@ definitions:
       surname:
         type: string
     type: object
+host: http://localhost:8080
 info:
   contact: {}
+  description: Сервис обогащает информацию о новых людях
+  title: Сервис обогащения информации о людях
 paths:
   /people/:
     get:
@@ -69,8 +73,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'Successful response" SchemaExample({"data": [{"id":1,"name":"John"}],
-            "total": 100})'
+          description: "Successful response\"\tSchemaExample({\"data\": [{\"id\":1,\"name\":\"John\"}],
+            \"total\": 100})"
           schema:
             additionalProperties: true
             type: object
@@ -185,4 +189,6 @@ paths:
       summary: Update an existing person
       tags:
       - persons
+schemes:
+- http
 swagger: "2.0"
